@@ -12,7 +12,18 @@ Route::get('/', function () {
 
 // Dashboard route - redirect based on user type
 Route::get('/dashboard', function () {
-    if (auth()->user()->isAdmin()) {
+    $user = auth()->user();
+
+    // Debug log
+    \Log::info('Dashboard redirect:', [
+        'email' => $user->email,
+        'user_type' => $user->user_type,
+        'isAdmin' => $user->isAdmin(),
+        'isSuperAdmin' => $user->isSuperAdmin()
+    ]);
+
+    // Explicit redirect based on user_type
+    if ($user->user_type === 'superadmin' || $user->user_type === 'admin') {
         return redirect()->route('admin.dashboard');
     } else {
         return redirect()->route('employee.dashboard');
@@ -21,14 +32,11 @@ Route::get('/dashboard', function () {
 
 require __DIR__ . '/auth.php';
 
-// Admin routes
+// Admin routes (accessible by both SuperAdmin and Admin) - MUST BE FIRST
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
-    // Admin management
-    Route::resource('admins', AdminController::class);
-
-    // Employee management
+    // Employee management - Both SuperAdmin and Admin can manage employees
     Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
     Route::get('/employees/create', [EmployeeController::class, 'create'])->name('employees.create');
     Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
@@ -37,13 +45,19 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::put('/employees/{employee}', [EmployeeController::class, 'update'])->name('employees.update');
     Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
 
-    // Leave management
+    // Leave management - Both SuperAdmin and Admin can manage leaves
     Route::get('/leaves', [LeaveController::class, 'adminIndex'])->name('leaves.index');
     Route::put('/leaves/{leave}/approve', [LeaveController::class, 'approve'])->name('leaves.approve');
     Route::put('/leaves/{leave}/reject', [LeaveController::class, 'reject'])->name('leaves.reject');
 
-    // Reports
+    // Reports - Both SuperAdmin and Admin can view reports
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
+});
+
+// SuperAdmin routes - MUST BE AFTER admin routes (more specific)
+Route::middleware(['auth', 'role:superadmin'])->prefix('admin')->name('admin.')->group(function () {
+    // Admin management - Only SuperAdmin can manage admins
+    Route::resource('admins', AdminController::class);
 });
 
 // Employee routes

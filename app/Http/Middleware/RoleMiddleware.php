@@ -10,8 +10,6 @@ class RoleMiddleware
 {
     /**
      * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next, string $role): Response
     {
@@ -21,9 +19,42 @@ class RoleMiddleware
 
         $user = auth()->user();
 
-        // Check if user has the required role
-        if ($user->user_type !== $role) {
-            abort(403, 'Access denied. You do not have permission to access this resource.');
+        // Handle multiple roles separated by |
+        $allowedRoles = explode('|', $role);
+
+        // Check if user has any of the allowed roles
+        $hasAccess = false;
+        foreach ($allowedRoles as $allowedRole) {
+            switch (trim($allowedRole)) {
+                case 'superadmin':
+                    if ($user->isSuperAdmin()) {
+                        $hasAccess = true;
+                    }
+                    break;
+
+                case 'admin':
+                    if ($user->isAdmin()) {
+                        $hasAccess = true;
+                    }
+                    break;
+
+                case 'employee':
+                    if ($user->isEmployee()) {
+                        $hasAccess = true;
+                    }
+                    break;
+
+                default:
+                    if ($user->user_type === trim($allowedRole)) {
+                        $hasAccess = true;
+                    }
+            }
+
+            if ($hasAccess) break;
+        }
+
+        if (!$hasAccess) {
+            abort(403, 'Access denied. Required role: ' . $role);
         }
 
         return $next($request);

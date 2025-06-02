@@ -16,9 +16,25 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create 1 Admin
-        $adminUser = User::factory()->create([
+        // Create 1 SuperAdmin
+        $superAdminUser = User::factory()->create([
             'name' => 'Super Admin',
+            'email' => 'superadmin@company.com',
+            'password' => Hash::make('password'),
+            'user_type' => 'superadmin',
+        ]);
+
+        Admin::factory()->create([
+            'user_id' => $superAdminUser->id,
+            'first_name' => 'Super',
+            'last_name' => 'Admin',
+            'birth_date' => '1980-01-15',
+            'gender' => 'male',
+        ]);
+
+        // Create 1 Regular Admin
+        $adminUser = User::factory()->create([
+            'name' => 'HR Admin',
             'email' => 'admin@company.com',
             'password' => Hash::make('password'),
             'user_type' => 'admin',
@@ -26,10 +42,10 @@ class DatabaseSeeder extends Seeder
 
         Admin::factory()->create([
             'user_id' => $adminUser->id,
-            'first_name' => 'Super',
+            'first_name' => 'HR',
             'last_name' => 'Admin',
-            'birth_date' => '1985-06-15',
-            'gender' => 'male',
+            'birth_date' => '1985-06-20',
+            'gender' => 'female',
         ]);
 
         // Create 5 Employees with realistic data
@@ -104,6 +120,8 @@ class DatabaseSeeder extends Seeder
         }
 
         // Create sample leave requests for employees
+        $approvers = [$superAdminUser, $adminUser]; // Both can approve leaves
+
         foreach ($employees as $employee) {
             // Create 2-4 leave requests per employee
             $leaveCount = rand(2, 4);
@@ -117,9 +135,10 @@ class DatabaseSeeder extends Seeder
 
                 // Set status based on random selection
                 if ($status === 'approved') {
+                    $approver = $approvers[array_rand($approvers)];
                     $leave->update([
                         'status' => 'approved',
-                        'approved_by' => $adminUser->id,
+                        'approved_by' => $approver->id,
                         'approved_at' => now()->subDays(rand(1, 30)),
                         'admin_notes' => collect([
                             'Approved as requested',
@@ -129,9 +148,10 @@ class DatabaseSeeder extends Seeder
                         ])->random(),
                     ]);
                 } elseif ($status === 'rejected') {
+                    $approver = $approvers[array_rand($approvers)];
                     $leave->update([
                         'status' => 'rejected',
-                        'approved_by' => $adminUser->id,
+                        'approved_by' => $approver->id,
                         'approved_at' => now()->subDays(rand(1, 15)),
                         'admin_notes' => collect([
                             'Insufficient staff coverage during requested period',
@@ -140,11 +160,20 @@ class DatabaseSeeder extends Seeder
                         ])->random(),
                     ]);
                 }
+                // Pending leaves remain as is (no approver or notes)
             }
         }
 
         $this->command->info('Database seeded successfully!');
-        $this->command->info('Admin Login: admin@company.com / password');
-        $this->command->info('Employee Logins: john.doe@company.com, jane.smith@company.com, etc. / password');
+        $this->command->info('');
+        $this->command->info('🔑 LOGIN CREDENTIALS:');
+        $this->command->info('SuperAdmin: superadmin@company.com / password');
+        $this->command->info('Admin: admin@company.com / password');
+        $this->command->info('Employees: john.doe@company.com, jane.smith@company.com, etc. / password');
+        $this->command->info('');
+        $this->command->info('👥 ROLE PERMISSIONS:');
+        $this->command->info('SuperAdmin: Full access (manage admins, employees, leaves, reports)');
+        $this->command->info('Admin: Limited access (manage employees, leaves, reports - NO admin management)');
+        $this->command->info('Employee: Self-service (own leaves and profile only)');
     }
 }

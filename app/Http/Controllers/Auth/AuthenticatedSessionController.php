@@ -28,13 +28,30 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Enhanced redirect logic based on user type
         $user = Auth::user();
 
-        if ($user->isAdmin()) {
+        // Debug: Log user type for troubleshooting
+        \Log::info('User login:', [
+            'email' => $user->email,
+            'user_type' => $user->user_type,
+            'isSuperAdmin' => $user->isSuperAdmin(),
+            'isRegularAdmin' => $user->isRegularAdmin(),
+            'isAdmin' => $user->isAdmin(),
+            'isEmployee' => $user->isEmployee()
+        ]);
+
+        // Explicit role-based redirect
+        if ($user->user_type === 'superadmin') {
             return redirect()->intended(route('admin.dashboard'));
-        } else {
+        } elseif ($user->user_type === 'admin') {
+            return redirect()->intended(route('admin.dashboard'));
+        } elseif ($user->user_type === 'employee') {
             return redirect()->intended(route('employee.dashboard'));
         }
+
+        // Fallback (shouldn't happen)
+        return redirect()->intended(route('dashboard'));
     }
 
     /**

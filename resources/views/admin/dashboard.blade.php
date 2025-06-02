@@ -1,33 +1,54 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Admin Dashboard') }}
-        </h2>
+        <div class="flex justify-between items-center">
+            <div>
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                    {{ __('Admin Dashboard') }}
+                </h2>
+                <p class="text-sm text-gray-600 mt-1">
+                    @if(auth()->user()->isSuperAdmin())
+                        Welcome back, <span class="font-medium text-blue-600">SuperAdmin</span> - You have full system access
+                    @else
+                        Welcome back, <span class="font-medium text-green-600">Admin</span> - You can manage employees and leaves
+                    @endif
+                </p>
+            </div>
+            @if(auth()->user()->isSuperAdmin())
+                <div class="flex space-x-2">
+                    <a href="{{ route('admin.admins.index') }}" 
+                       class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
+                        Manage Admins
+                    </a>
+                </div>
+            @endif
+        </div>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Statistics Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
+                @if(auth()->user()->isSuperAdmin())
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6 text-gray-900">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Total Admins</dt>
-                                    <dd class="text-lg font-medium text-gray-900">{{ $stats['total_admins'] }}</dd>
-                                </dl>
+                                <div class="ml-5 w-0 flex-1">
+                                    <dl>
+                                        <dt class="text-sm font-medium text-gray-500 truncate">Total Admins</dt>
+                                        <dd class="text-lg font-medium text-gray-900">{{ $stats['total_admins'] }}</dd>
+                                    </dl>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                @endif
 
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
@@ -81,8 +102,20 @@
                             </div>
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Approved Today</dt>
-                                    <dd class="text-lg font-medium text-gray-900">{{ $stats['approved_leaves_today'] }}</dd>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">
+                                        @if(auth()->user()->isSuperAdmin())
+                                            Approved Today
+                                        @else
+                                            My Approvals Today
+                                        @endif
+                                    </dt>
+                                    <dd class="text-lg font-medium text-gray-900">
+                                        @if(auth()->user()->isSuperAdmin())
+                                            {{ $stats['approved_leaves_today'] }}
+                                        @else
+                                            {{ \App\Models\Leave::where('approved_by', auth()->id())->whereDate('approved_at', today())->count() }}
+                                        @endif
+                                    </dd>
                                 </dl>
                             </div>
                         </div>
@@ -92,19 +125,21 @@
 
             <!-- Quick Actions -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                <a href="{{ route('admin.admins.create') }}" class="bg-blue-50 hover:bg-blue-100 p-6 rounded-lg border border-blue-200 transition duration-150">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                            </svg>
+                @if(auth()->user()->isSuperAdmin())
+                    <a href="{{ route('admin.admins.create') }}" class="bg-blue-50 hover:bg-blue-100 p-6 rounded-lg border border-blue-200 transition duration-150">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-medium text-blue-900">Add New Admin</h3>
+                                <p class="text-blue-700">Create a new admin account</p>
+                            </div>
                         </div>
-                        <div class="ml-4">
-                            <h3 class="text-lg font-medium text-blue-900">Add New Admin</h3>
-                            <p class="text-blue-700">Create a new admin account</p>
-                        </div>
-                    </div>
-                </a>
+                    </a>
+                @endif
 
                 <a href="{{ route('admin.employees.create') }}" class="bg-green-50 hover:bg-green-100 p-6 rounded-lg border border-green-200 transition duration-150">
                     <div class="flex items-center">

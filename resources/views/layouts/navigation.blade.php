@@ -16,9 +16,15 @@
                         <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
                             {{ __('Dashboard') }}
                         </x-nav-link>
-                        <x-nav-link :href="route('admin.admins.index')" :active="request()->routeIs('admin.admins.*')">
-                            {{ __('Admins') }}
-                        </x-nav-link>
+                        
+                        {{-- SuperAdmin Only Menu --}}
+                        @if(auth()->user()->isSuperAdmin())
+                            <x-nav-link :href="route('admin.admins.index')" :active="request()->routeIs('admin.admins.*')">
+                                {{ __('Admins') }}
+                            </x-nav-link>
+                        @endif
+                        
+                        {{-- Both SuperAdmin and Admin Menu --}}
                         <x-nav-link :href="route('admin.employees.index')" :active="request()->routeIs('admin.employees.*')">
                             {{ __('Employees') }}
                         </x-nav-link>
@@ -58,7 +64,13 @@
 
                     <x-slot name="content">
                         <div class="px-4 py-2 text-xs text-gray-400">
-                            {{ auth()->user()->isAdmin() ? 'Admin' : 'Employee' }}
+                            @if(auth()->user()->isSuperAdmin())
+                                SuperAdmin
+                            @elseif(auth()->user()->isRegularAdmin())
+                                Admin
+                            @else
+                                Employee
+                            @endif
                         </div>
                         
                         <x-dropdown-link :href="route('profile.edit')">
@@ -97,9 +109,15 @@
                 <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
                     {{ __('Dashboard') }}
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('admin.admins.index')" :active="request()->routeIs('admin.admins.*')">
-                    {{ __('Admins') }}
-                </x-responsive-nav-link>
+                
+                {{-- SuperAdmin Only Menu --}}
+                @if(auth()->user()->isSuperAdmin())
+                    <x-responsive-nav-link :href="route('admin.admins.index')" :active="request()->routeIs('admin.admins.*')">
+                        {{ __('Admins') }}
+                    </x-responsive-nav-link>
+                @endif
+                
+                {{-- Both SuperAdmin and Admin Menu --}}
                 <x-responsive-nav-link :href="route('admin.employees.index')" :active="request()->routeIs('admin.employees.*')">
                     {{ __('Employees') }}
                 </x-responsive-nav-link>
@@ -127,7 +145,15 @@
             <div class="px-4">
                 <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
                 <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
-                <div class="text-xs text-gray-400 mt-1">{{ auth()->user()->isAdmin() ? 'Admin' : 'Employee' }}</div>
+                <div class="text-xs text-gray-400 mt-1">
+                    @if(auth()->user()->isSuperAdmin())
+                        SuperAdmin
+                    @elseif(auth()->user()->isRegularAdmin())
+                        Admin
+                    @else
+                        Employee
+                    @endif
+                </div>
             </div>
 
             <div class="mt-3 space-y-1">
