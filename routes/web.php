@@ -10,6 +10,15 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Dashboard route - redirect based on user type
+Route::get('/dashboard', function () {
+    if (auth()->user()->isAdmin()) {
+        return redirect()->route('admin.dashboard');
+    } else {
+        return redirect()->route('employee.dashboard');
+    }
+})->middleware(['auth', 'verified'])->name('dashboard');
+
 require __DIR__ . '/auth.php';
 
 // Admin routes
@@ -49,6 +58,7 @@ Route::middleware(['auth', 'role:employee'])->prefix('employee')->name('employee
     Route::resource('leaves', LeaveController::class)->except(['destroy']);
 });
 
+// Shared authenticated routes
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
