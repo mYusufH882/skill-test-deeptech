@@ -15,7 +15,25 @@
             @endif
 
             <!-- Statistics Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="ml-5">
+                                <p class="text-sm font-medium text-gray-500">Approved</p>
+                                <p class="text-2xl font-semibold text-gray-900">{{ $leaves->where('status', 'approved')->count() }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
                         <div class="flex items-center">
@@ -65,8 +83,8 @@
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Submitted
                                         </th>
-                                        <th scope="col" class="relative px-6 py-3">
-                                            <span class="sr-only">Actions</span>
+                                        <th scope="col" class="relative px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <span>Actions</span>
                                         </th>
                                     </tr>
                                 </thead>
@@ -114,12 +132,21 @@
                                                 </div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                                    @if($leave->status === 'pending') bg-yellow-100 text-yellow-800
-                                                    @elseif($leave->status === 'approved') bg-green-100 text-green-800
-                                                    @else bg-red-100 text-red-800 @endif">
-                                                    {{ ucfirst($leave->status) }}
-                                                </span>
+                                                @if($leave->status === 'pending')
+                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                        Pending
+                                                    </span>
+                                                @endif
+                                                @if($leave->status === 'approved')
+                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                        Approved
+                                                    </span>
+                                                @endif
+                                                @if($leave->status === 'rejected')
+                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                                        Rejected
+                                                    </span>
+                                                @endif
                                                 @if($leave->status !== 'pending' && $leave->approver)
                                                     <div class="text-xs text-gray-500 mt-1">
                                                         by {{ $leave->approver->name }}

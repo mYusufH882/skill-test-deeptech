@@ -15,6 +15,12 @@ class LeaveController extends Controller
     public function index()
     {
         $employee = auth()->user()->employee;
+
+        // Check if user has employee profile
+        if (!$employee) {
+            abort(403, 'Employee profile not found. Please contact administrator.');
+        }
+
         $leaves = $employee->leaves()->latest()->paginate(10);
 
         return view('employee.leaves.index', compact('leaves'));
@@ -26,6 +32,11 @@ class LeaveController extends Controller
     public function create()
     {
         $employee = auth()->user()->employee;
+
+        // Check if user has employee profile
+        if (!$employee) {
+            abort(403, 'Employee profile not found. Please contact administrator.');
+        }
 
         $stats = [
             'remaining_days' => $employee->getRemainingLeaveDays(),
@@ -41,6 +52,11 @@ class LeaveController extends Controller
     public function store(Request $request)
     {
         $employee = auth()->user()->employee;
+
+        // Check if user has employee profile
+        if (!$employee) {
+            return redirect()->back()->withErrors(['error' => 'Employee profile not found. Please contact administrator.']);
+        }
 
         $request->validate([
             'reason' => 'required|string|max:1000',
@@ -92,12 +108,28 @@ class LeaveController extends Controller
      */
     public function show(Leave $leave)
     {
-        // Check authorization
-        if (auth()->user()->isEmployee() && $leave->employee->user_id !== auth()->id()) {
-            abort(403);
+        // Load the employee relationship to avoid null errors
+        $leave->load(['employee.user', 'approver']);
+
+        // Check if leave has employee (data integrity check)
+        if (!$leave->employee) {
+            abort(404, 'Leave request data is invalid. Employee not found.');
         }
 
-        $leave->load(['employee.user', 'approver']);
+        // Check authorization for employees
+        if (auth()->user()->isEmployee()) {
+            // Check if user has employee profile
+            $currentEmployee = auth()->user()->employee;
+            if (!$currentEmployee) {
+                abort(403, 'Employee profile not found. Please contact administrator.');
+            }
+
+            // Check if this leave belongs to current employee
+            if ($leave->employee_id !== $currentEmployee->id) {
+                abort(403, 'You can only view your own leave requests.');
+            }
+        }
+
         return view('employee.leaves.show', compact('leave'));
     }
 
@@ -106,9 +138,23 @@ class LeaveController extends Controller
      */
     public function edit(Leave $leave)
     {
+        // Load the employee relationship
+        $leave->load('employee.user');
+
+        // Check if leave has employee
+        if (!$leave->employee) {
+            abort(404, 'Leave request data is invalid. Employee not found.');
+        }
+
+        // Check if user has employee profile
+        $currentEmployee = auth()->user()->employee;
+        if (!$currentEmployee) {
+            abort(403, 'Employee profile not found. Please contact administrator.');
+        }
+
         // Check authorization
-        if ($leave->employee->user_id !== auth()->id()) {
-            abort(403);
+        if ($leave->employee_id !== $currentEmployee->id) {
+            abort(403, 'You can only edit your own leave requests.');
         }
 
         // Only allow editing pending leaves
@@ -124,9 +170,23 @@ class LeaveController extends Controller
      */
     public function update(Request $request, Leave $leave)
     {
+        // Load the employee relationship
+        $leave->load('employee');
+
+        // Check if leave has employee
+        if (!$leave->employee) {
+            return back()->withErrors(['error' => 'Leave request data is invalid. Employee not found.']);
+        }
+
+        // Check if user has employee profile
+        $currentEmployee = auth()->user()->employee;
+        if (!$currentEmployee) {
+            return back()->withErrors(['error' => 'Employee profile not found. Please contact administrator.']);
+        }
+
         // Check authorization
-        if ($leave->employee->user_id !== auth()->id()) {
-            abort(403);
+        if ($leave->employee_id !== $currentEmployee->id) {
+            abort(403, 'You can only edit your own leave requests.');
         }
 
         // Only allow editing pending leaves
@@ -183,6 +243,14 @@ class LeaveController extends Controller
      */
     public function approve(Request $request, Leave $leave)
     {
+        // Load employee relationship
+        $leave->load('employee');
+
+        // Check if leave has employee
+        if (!$leave->employee) {
+            return back()->withErrors(['error' => 'Leave request data is invalid. Employee not found.']);
+        }
+
         $request->validate([
             'admin_notes' => 'nullable|string|max:500',
         ]);
@@ -197,6 +265,14 @@ class LeaveController extends Controller
      */
     public function reject(Request $request, Leave $leave)
     {
+        // Load employee relationship
+        $leave->load('employee');
+
+        // Check if leave has employee
+        if (!$leave->employee) {
+            return back()->withErrors(['error' => 'Leave request data is invalid. Employee not found.']);
+        }
+
         $request->validate([
             'admin_notes' => 'required|string|max:500',
         ]);

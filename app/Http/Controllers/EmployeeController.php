@@ -24,7 +24,7 @@ class EmployeeController extends Controller
             'pending_requests' => $employee->leaves()->pending()->count(),
             'approved_requests' => $employee->leaves()->approved()->currentYear()->count(),
         ];
-
+        // dd($stats);
         $recent_leaves = $employee->leaves()
             ->latest()
             ->take(5)

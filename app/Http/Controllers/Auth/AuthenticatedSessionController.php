@@ -25,33 +25,25 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
-
         $request->session()->regenerate();
 
-        // Enhanced redirect logic based on user type
         $user = Auth::user();
 
-        // Debug: Log user type for troubleshooting
-        \Log::info('User login:', [
-            'email' => $user->email,
-            'user_type' => $user->user_type,
-            'isSuperAdmin' => $user->isSuperAdmin(),
-            'isRegularAdmin' => $user->isRegularAdmin(),
-            'isAdmin' => $user->isAdmin(),
-            'isEmployee' => $user->isEmployee()
-        ]);
-
-        // Explicit role-based redirect
-        if ($user->user_type === 'superadmin') {
-            return redirect()->intended(route('admin.dashboard'));
-        } elseif ($user->user_type === 'admin') {
-            return redirect()->intended(route('admin.dashboard'));
-        } elseif ($user->user_type === 'employee') {
-            return redirect()->intended(route('employee.dashboard'));
+        // PERBAIKAN: Gunakan direct redirect tanpa intended()
+        if ($user->isSuperAdmin()) {
+            return redirect()->route('admin.dashboard');
         }
 
-        // Fallback (shouldn't happen)
-        return redirect()->intended(route('dashboard'));
+        if ($user->isRegularAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        if ($user->isEmployee()) {
+            return redirect()->route('employee.dashboard');
+        }
+
+        // Fallback dengan log warning
+        return redirect()->route('dashboard');
     }
 
     /**
