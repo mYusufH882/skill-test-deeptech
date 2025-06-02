@@ -73,8 +73,23 @@
                             @endif
                         </div>
                         
+                        {{-- Admin Profile Link - TAMBAHAN BARU --}}
+                        @if(auth()->user()->isAdmin())
+                            <x-dropdown-link :href="route('admin.profile')">
+                                {{ __('My Profile') }}
+                            </x-dropdown-link>
+                        @endif
+                        
+                        {{-- Default Profile Link untuk Employee --}}
+                        @if(auth()->user()->isEmployee())
+                            <x-dropdown-link :href="route('employee.profile')">
+                                {{ __('My Profile') }}
+                            </x-dropdown-link>
+                        @endif
+                        
+                        {{-- System Profile Link (yang sudah ada) --}}
                         <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
+                            {{ __('Account Settings') }}
                         </x-dropdown-link>
 
                         <!-- Authentication -->
@@ -157,8 +172,23 @@
             </div>
 
             <div class="mt-3 space-y-1">
+                {{-- Admin Profile Link - Mobile --}}
+                @if(auth()->user()->isAdmin())
+                    <x-responsive-nav-link :href="route('admin.profile')">
+                        {{ __('My Profile') }}
+                    </x-responsive-nav-link>
+                @endif
+                
+                {{-- Employee Profile Link - Mobile --}}
+                @if(auth()->user()->isEmployee())
+                    <x-responsive-nav-link :href="route('employee.profile')">
+                        {{ __('My Profile') }}
+                    </x-responsive-nav-link>
+                @endif
+                
+                {{-- System Profile Link --}}
                 <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
+                    {{ __('Account Settings') }}
                 </x-responsive-nav-link>
 
                 <!-- Authentication -->

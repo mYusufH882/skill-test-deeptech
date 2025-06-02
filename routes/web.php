@@ -52,6 +52,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     // Reports - Both SuperAdmin and Admin can view reports
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
+
+    Route::get('/profile', [AdminController::class, 'profile'])->name('profile');
+    Route::put('/profile', [AdminController::class, 'updateProfile'])->name('profile.update');
 });
 
 // SuperAdmin routes - MUST BE AFTER admin routes (more specific)

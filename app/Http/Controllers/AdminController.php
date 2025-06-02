@@ -176,4 +176,56 @@ class AdminController extends Controller
 
         return view('admin.reports', compact('employees_with_leaves', 'leave_statistics'));
     }
+
+    /**
+     * Show admin profile page
+     */
+    public function profile()
+    {
+        $admin = auth()->user()->admin;
+
+        if (!$admin) {
+            // Jika user admin tidak memiliki record di table admins
+            return redirect()->route('admin.dashboard')
+                ->with('error', 'Admin profile not found. Please contact system administrator.');
+        }
+
+        return view('admin.profile', compact('admin'));
+    }
+
+    /**
+     * Update admin profile
+     */
+    public function updateProfile(Request $request)
+    {
+        $admin = auth()->user()->admin;
+
+        if (!$admin) {
+            return redirect()->route('admin.dashboard')
+                ->with('error', 'Admin profile not found.');
+        }
+
+        $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'birth_date' => 'required|date|before:today',
+            'gender' => 'required|in:male,female',
+        ]);
+
+        // Update admin profile
+        $admin->update([
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'birth_date' => $request->birth_date,
+            'gender' => $request->gender,
+        ]);
+
+        // Update user name to match admin name
+        $admin->user->update([
+            'name' => $request->first_name . ' ' . $request->last_name,
+        ]);
+
+        return redirect()->route('admin.profile')
+            ->with('success', 'Profile updated successfully.');
+    }
 }
