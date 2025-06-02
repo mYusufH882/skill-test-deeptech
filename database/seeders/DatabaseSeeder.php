@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
         // Create 1 SuperAdmin
         $superAdminUser = User::factory()->create([
             'name' => 'Super Admin',
-            'email' => 'superadmin@company.com',
+            'email' => 'superadmin@mail.com',
             'password' => Hash::make('password'),
             'user_type' => 'superadmin',
         ]);
@@ -28,14 +28,14 @@ class DatabaseSeeder extends Seeder
             'user_id' => $superAdminUser->id,
             'first_name' => 'Super',
             'last_name' => 'Admin',
-            'birth_date' => '1980-01-15',
+            'birth_date' => '1996-01-15',
             'gender' => 'male',
         ]);
 
         // Create 1 Regular Admin
         $adminUser = User::factory()->create([
             'name' => 'HR Admin',
-            'email' => 'admin@company.com',
+            'email' => 'admin@mail.com',
             'password' => Hash::make('password'),
             'user_type' => 'admin',
         ]);
@@ -44,7 +44,7 @@ class DatabaseSeeder extends Seeder
             'user_id' => $adminUser->id,
             'first_name' => 'HR',
             'last_name' => 'Admin',
-            'birth_date' => '1985-06-20',
+            'birth_date' => '1997-06-20',
             'gender' => 'female',
         ]);
 
