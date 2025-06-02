@@ -25,6 +25,7 @@ class EmployeeController extends Controller
             'approved_requests' => $employee->leaves()->approved()->currentYear()->count(),
         ];
         // dd($stats);
+
         $recent_leaves = $employee->leaves()
             ->latest()
             ->take(5)
@@ -38,7 +39,19 @@ class EmployeeController extends Controller
      */
     public function index()
     {
-        $employees = Employee::with('user')->paginate(10);
+        $user = auth()->user();
+
+        // Filter employees based on user role
+        if ($user->isSuperAdmin()) {
+            // SuperAdmin sees all employees
+            $employees = Employee::with(['user', 'creator'])->paginate(10);
+        } else {
+            // Regular admin sees only employees they created
+            $employees = Employee::with(['user', 'creator'])
+                ->where('created_by', $user->id)
+                ->paginate(10);
+        }
+
         return view('admin.employees.index', compact('employees'));
     }
 
@@ -74,7 +87,7 @@ class EmployeeController extends Controller
             'user_type' => 'employee',
         ]);
 
-        // Create employee profile
+        // Create employee profile with created_by
         Employee::create([
             'user_id' => $user->id,
             'first_name' => $request->first_name,
@@ -82,6 +95,7 @@ class EmployeeController extends Controller
             'phone' => $request->phone,
             'address' => $request->address,
             'gender' => $request->gender,
+            'created_by' => auth()->id(), // SET CREATOR
         ]);
 
         return redirect()->route('admin.employees.index')
@@ -93,7 +107,14 @@ class EmployeeController extends Controller
      */
     public function show(Employee $employee)
     {
-        $employee->load(['user', 'leaves']);
+        $user = auth()->user();
+
+        // Check access permission
+        if (!$user->isSuperAdmin() && $employee->created_by !== $user->id) {
+            abort(403, 'You can only view employees you created.');
+        }
+
+        $employee->load(['user', 'leaves', 'creator']);
 
         $leave_stats = [
             'total_used' => $employee->getTotalLeaveDaysThisYear(),
@@ -109,7 +130,14 @@ class EmployeeController extends Controller
      */
     public function edit(Employee $employee)
     {
-        $employee->load('user');
+        $user = auth()->user();
+
+        // Check access permission
+        if (!$user->isSuperAdmin() && $employee->created_by !== $user->id) {
+            abort(403, 'You can only edit employees you created.');
+        }
+
+        $employee->load(['user', 'creator']);
         return view('admin.employees.edit', compact('employee'));
     }
 
@@ -118,6 +146,13 @@ class EmployeeController extends Controller
      */
     public function update(Request $request, Employee $employee)
     {
+        $user = auth()->user();
+
+        // Check access permission
+        if (!$user->isSuperAdmin() && $employee->created_by !== $user->id) {
+            abort(403, 'You can only update employees you created.');
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($employee->user_id)],
@@ -145,13 +180,14 @@ class EmployeeController extends Controller
             ]);
         }
 
-        // Update employee profile
+        // Update employee profile (created_by tidak berubah)
         $employee->update([
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
             'phone' => $request->phone,
             'address' => $request->address,
             'gender' => $request->gender,
+            // created_by TIDAK diupdate, tetap milik creator asli
         ]);
 
         return redirect()->route('admin.employees.index')
@@ -163,6 +199,13 @@ class EmployeeController extends Controller
      */
     public function destroy(Employee $employee)
     {
+        $user = auth()->user();
+
+        // Check access permission
+        if (!$user->isSuperAdmin() && $employee->created_by !== $user->id) {
+            abort(403, 'You can only delete employees you created.');
+        }
+
         // Delete user (will cascade delete employee due to foreign key)
         $employee->user->delete();
 
