@@ -200,9 +200,21 @@
                                             {{ $leave->total_days }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                {{ ucfirst($leave->status) }}
-                                            </span>
+                                            @if($leave->status === 'pending')
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                    Pending
+                                                </span>
+                                            @endif
+                                            @if($leave->status === 'approved')
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                    Approved
+                                                </span>
+                                            @endif
+                                            @if($leave->status === 'rejected')
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                                    Rejected
+                                                </span>
+                                            @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <a href="{{ route('admin.leaves.index') }}" class="text-indigo-600 hover:text-indigo-900">Review</a>

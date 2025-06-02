@@ -95,11 +95,13 @@
                                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
                                                     Pending
                                                 </span>
-                                            @elseif($leave->status === 'approved')
+                                            @endif
+                                            @if($leave->status === 'approved')
                                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                                     Approved
                                                 </span>
-                                            @else
+                                            @endif
+                                            @if($leave->status === 'rejected')
                                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                                                     Rejected
                                                 </span>
@@ -138,7 +140,7 @@
                             <h3 class="mt-2 text-sm font-medium text-gray-900">No leave requests</h3>
                             <p class="mt-1 text-sm text-gray-500">Get started by creating your first leave request.</p>
                             <div class="mt-6">
-                                <a href="{{ route('employee.leaves.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <a href="{{ route('employee.leaves.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                     </svg>

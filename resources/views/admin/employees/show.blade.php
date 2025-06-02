@@ -126,12 +126,12 @@
                                 </div>
 
                                 <!-- Submit Button -->
-                                <div class="flex items-center justify-end pt-6 border-t border-gray-200">
+                                {{-- <div class="flex items-center justify-end pt-6 border-t border-gray-200">
                                     <button type="submit" 
                                             class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-150 ease-in-out">
                                         Update Profile
                                     </button>
-                                </div>
+                                </div> --}}
                             </form>
                         </div>
                     </div>
@@ -166,12 +166,12 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="mt-4">
+                            {{-- <div class="mt-4">
                                 <a href="{{ route('employee.leaves.create') }}" 
                                    class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                                     Request Leave
                                 </a>
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
 
@@ -214,7 +214,7 @@
                         <div class="p-6">
                             <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
                             <div class="space-y-3">
-                                <a href="{{ route('employee.leaves.index') }}" 
+                                <a href="{{ route('admin.leaves.index') }}" 
                                    class="w-full inline-flex items-center justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>

@@ -25,7 +25,6 @@ class AdminController extends Controller
         ];
 
         $recent_leaves = Leave::with(['employee.user'])
-            ->pending()
             ->latest()
             ->take(5)
             ->get();
