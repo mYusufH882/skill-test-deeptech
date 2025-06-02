@@ -78,6 +78,8 @@ npm run dev
 
 ### 9. Start Development Servers
 
+#### Wajib menjalankan php artisan serve dan npm run dev saat mengujinya di lokal 
+
 ```bash
 # Terminal 1 - Laravel
 php artisan serve
