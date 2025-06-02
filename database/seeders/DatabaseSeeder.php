@@ -169,11 +169,11 @@ class DatabaseSeeder extends Seeder
         $this->command->info('🔑 LOGIN CREDENTIALS:');
         $this->command->info('SuperAdmin: superadmin@company.com / password');
         $this->command->info('Admin: admin@company.com / password');
-        $this->command->info('Employees: john.doe@company.com, jane.smith@company.com, etc. / password');
+        // $this->command->info('Employees: john.doe@company.com, jane.smith@company.com, etc. / password');
         $this->command->info('');
         $this->command->info('👥 ROLE PERMISSIONS:');
         $this->command->info('SuperAdmin: Full access (manage admins, employees, leaves, reports)');
         $this->command->info('Admin: Limited access (manage employees, leaves, reports - NO admin management)');
-        $this->command->info('Employee: Self-service (own leaves and profile only)');
+        // $this->command->info('Employee: Self-service (own leaves and profile only)');
     }
 }
