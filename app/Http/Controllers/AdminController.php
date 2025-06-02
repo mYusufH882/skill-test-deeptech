@@ -17,17 +17,42 @@ class AdminController extends Controller
      */
     public function dashboard()
     {
-        $stats = [
-            'total_admins' => Admin::count(),
-            'total_employees' => Employee::count(),
-            'pending_leaves' => Leave::pending()->count(),
-            'approved_leaves_today' => Leave::approved()->whereDate('created_at', today())->count(),
-        ];
+        $user = auth()->user();
 
-        $recent_leaves = Leave::with(['employee.user'])
-            ->latest()
-            ->take(5)
-            ->get();
+        // Get stats based on user role
+        if ($user->isSuperAdmin()) {
+            // SuperAdmin sees all data
+            $stats = [
+                'total_admins' => Admin::count(),
+                'total_employees' => Employee::count(),
+                'pending_leaves' => Leave::pending()->count(),
+                'approved_leaves_today' => Leave::approved()->whereDate('created_at', today())->count(),
+            ];
+
+            $recent_leaves = Leave::with(['employee.user'])
+                ->latest()
+                ->take(5)
+                ->get();
+        } else {
+            // Regular admin sees only their data
+            $employeeIds = $user->createdEmployees()->pluck('id');
+
+            $stats = [
+                'total_admins' => 1, // Only themselves
+                'total_employees' => $user->createdEmployees()->count(),
+                'pending_leaves' => Leave::pending()->whereIn('employee_id', $employeeIds)->count(),
+                'approved_leaves_today' => Leave::approved()
+                    ->whereIn('employee_id', $employeeIds)
+                    ->whereDate('created_at', today())
+                    ->count(),
+            ];
+
+            $recent_leaves = Leave::with(['employee.user'])
+                ->whereIn('employee_id', $employeeIds)
+                ->latest()
+                ->take(5)
+                ->get();
+        }
 
         return view('admin.dashboard', compact('stats', 'recent_leaves'));
     }
@@ -163,15 +188,35 @@ class AdminController extends Controller
      */
     public function reports()
     {
-        $employees_with_leaves = Employee::with(['user', 'leaves' => function ($query) {
-            $query->approved()->currentYear();
-        }])->get();
+        $user = auth()->user();
 
-        $leave_statistics = [
-            'total_approved_leaves' => Leave::approved()->currentYear()->count(),
-            'total_pending_leaves' => Leave::pending()->count(),
-            'total_leave_days' => Leave::approved()->currentYear()->get()->sum('total_days'),
-        ];
+        if ($user->isSuperAdmin()) {
+            // SuperAdmin sees all employees with leaves
+            $employees_with_leaves = Employee::with(['user', 'leaves' => function ($query) {
+                $query->approved()->currentYear();
+            }, 'creator'])->get();
+
+            $leave_statistics = [
+                'total_approved_leaves' => Leave::approved()->currentYear()->count(),
+                'total_pending_leaves' => Leave::pending()->count(),
+                'total_leave_days' => Leave::approved()->currentYear()->get()->sum('total_days'),
+            ];
+        } else {
+            // Regular admin sees only their employees
+            $employeeIds = $user->createdEmployees()->pluck('id');
+
+            $employees_with_leaves = Employee::with(['user', 'leaves' => function ($query) {
+                $query->approved()->currentYear();
+            }, 'creator'])
+                ->whereIn('id', $employeeIds)
+                ->get();
+
+            $leave_statistics = [
+                'total_approved_leaves' => Leave::approved()->currentYear()->whereIn('employee_id', $employeeIds)->count(),
+                'total_pending_leaves' => Leave::pending()->whereIn('employee_id', $employeeIds)->count(),
+                'total_leave_days' => Leave::approved()->currentYear()->whereIn('employee_id', $employeeIds)->get()->sum('total_days'),
+            ];
+        }
 
         return view('admin.reports', compact('employees_with_leaves', 'leave_statistics'));
     }

@@ -96,6 +96,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get employees created by this admin (TAMBAHAN BARU)
+     */
+    public function createdEmployees()
+    {
+        return $this->hasMany(Employee::class, 'created_by');
+    }
+
+    /**
      * Get the profile based on user type
      */
     public function profile()
@@ -112,5 +120,29 @@ class User extends Authenticatable
     public function approvedLeaves()
     {
         return $this->hasMany(Leave::class, 'approved_by');
+    }
+
+    /**
+     * Get count of employees accessible to this user (TAMBAHAN BARU)
+     */
+    public function getAccessibleEmployeesCount(): int
+    {
+        if ($this->isSuperAdmin()) {
+            return Employee::count(); // SuperAdmin sees all
+        }
+
+        return $this->createdEmployees()->count(); // Regular admin sees only created by them
+    }
+
+    /**
+     * Get employees accessible to this user (TAMBAHAN BARU)
+     */
+    public function getAccessibleEmployees()
+    {
+        if ($this->isSuperAdmin()) {
+            return Employee::with('user'); // SuperAdmin sees all
+        }
+
+        return $this->createdEmployees()->with('user'); // Regular admin sees only theirs
     }
 }

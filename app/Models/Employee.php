@@ -20,6 +20,7 @@ class Employee extends Model
         'phone',
         'address',
         'gender',
+        'created_by', // TAMBAHAN BARU
     ];
 
     /**
@@ -28,6 +29,14 @@ class Employee extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the admin who created this employee.
+     */
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**
@@ -86,5 +95,25 @@ class Employee extends Model
             ->whereYear('start_date', $year)
             ->whereMonth('start_date', $month)
             ->exists();
+    }
+
+    /**
+     * Scope for filtering employees by creator (for admin ownership)
+     */
+    public function scopeForAdmin($query, $adminId)
+    {
+        return $query->where('created_by', $adminId);
+    }
+
+    /**
+     * Scope for admin access (SuperAdmin sees all, regular admin sees only theirs)
+     */
+    public function scopeAccessibleBy($query, $user)
+    {
+        if ($user->isSuperAdmin()) {
+            return $query; // SuperAdmin sees all
+        }
+
+        return $query->where('created_by', $user->id); // Regular admin sees only theirs
     }
 }
