@@ -15,7 +15,7 @@ Laravel 12 application untuk manajemen cuti pegawai dengan role-based access con
 
 ```bash
 git clone <repository-url>
-cd employee-leave-management
+cd [nama_proyek]
 ```
 
 ### 2. Install PHP Dependencies
