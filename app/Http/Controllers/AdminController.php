@@ -23,7 +23,9 @@ class AdminController extends Controller
         if ($user->isSuperAdmin()) {
             // SuperAdmin sees all data
             $stats = [
-                'total_admins' => Admin::count(),
+                'total_admins' => Admin::whereHas('user', function ($q) {
+                    return $q->where('user_type', 'admin');
+                })->count(),
                 'total_employees' => Employee::count(),
                 'pending_leaves' => Leave::pending()->count(),
                 'approved_leaves_today' => Leave::approved()->whereDate('created_at', today())->count(),
@@ -62,7 +64,12 @@ class AdminController extends Controller
      */
     public function index()
     {
-        $admins = Admin::with('user')->paginate(10);
+        $admins = Admin::with('user')
+            ->whereHas('user', function ($q) {
+                $q->where('user_type', 'admin');
+            })
+            ->paginate(10);
+
         return view('admin.admins.index', compact('admins'));
     }
 

@@ -70,9 +70,10 @@ Route::prefix('v1')->group(function () {
             // Employee Leave Management
             Route::apiResource('leaves', LeaveController::class)->except(['destroy']);
 
-            // Employee Profile
+            // Employee Profile & Dashboard
             Route::get('profile', [ProfileController::class, 'show']);
             Route::put('profile', [ProfileController::class, 'update']);
+            Route::get('dashboard', [ProfileController::class, 'dashboard']);
         });
 
         // Mixed Role Routes (Admin can view employee leaves, Employee can view own)
